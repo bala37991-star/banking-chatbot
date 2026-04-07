@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+body {
+    margin:0;
+    font-family: 'Segoe UI';
+    background:#f4f6f9;
+}
+
+/* HEADER */
+.header {
+    background:#202123;
+    color:white;
+    padding:15px;
+    font-size:20px;
+}
+
+/* CONTAINER */
+.container {
+    padding:20px;
+}
+
+/* CARDS */
+.cards {
+    display:flex;
+    gap:20px;
+    margin-bottom:20px;
+}
+
+.card {
+    flex:1;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    text-align:center;
+}
+
+.card h3 {
+    margin:0;
+    color:#555;
+}
+
+.card p {
+    font-size:22px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+/* TABLE */
+table {
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding:12px;
+    text-align:center;
+}
+
+th {
+    background:#19c37d;
+    color:white;
+}
+
+tr:nth-child(even) {
+    background:#f2f2f2;
+}
+
+/* BUTTONS */
+button {
+    padding:6px 12px;
+    border:none;
+    border-radius:5px;
+    color:white;
+    cursor:pointer;
+}
+
+.approve {
+    background:green;
+}
+
+.reject {
+    background:red;
+}
+
+/* STATUS COLORS */
+.status-approved {
+    color:green;
+    font-weight:bold;
+}
+
+.status-rejected {
+    color:red;
+    font-weight:bold;
+}
+
+.status-pending {
+    color:orange;
+    font-weight:bold;
+}
+
+.top-bar {
+    margin-bottom:10px;
+}
+
+a {
+    text-decoration:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    👨‍💼 Admin Dashboard
+</div>
+
+<div class="container">
+
+<!-- STATS -->
+<div class="cards">
+    <div class="card">
+        <h3>Total Users</h3>
+        <p>{{ total_users }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Total Balance</h3>
+        <p>₹{{ total_balance }}</p>
+    </div>
+
+    <div class="card">
+        <h3>Total Loans</h3>
+        <p>{{ loans|length }}</p>
+    </div>
+</div>
+
+<!-- USERS TABLE -->
+<h3>👥 Users</h3>
+
+<table>
+<tr>
+<th>ID</th>
+<th>Username</th>
+<th>Balance</th>
+<th>Role</th>
+</tr>
+
+{% for user in users %}
+<tr>
+<td>{{ user.id }}</td>
+<td>{{ user.username }}</td>
+<td>₹{{ user.balance }}</td>
+<td>{{ user.role }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<br>
+
+<!-- LOANS TABLE -->
+<h3>🏦 Loan Requests</h3>
+
+<table>
+<tr>
+<th>ID</th>
+<th>User</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+{% for loan in loans %}
+<tr>
+<td>{{ loan.id }}</td>
+<td>{{ loan.user_id }}</td>
+<td>₹{{ loan.amount }}</td>
+
+<td>
+    <span class="
+        {% if loan.status == 'Approved' %}
+            status-approved
+        {% elif loan.status == 'Rejected' %}
+            status-rejected
+        {% else %}
+            status-pending
+        {% endif %}
+    ">
+        {{ loan.status }}
+    </span>
+</td>
+
+<td>
+    {% if loan.status == "Pending" %}
+        <a href="/approve_loan/{{ loan.id }}">
+            <button class="approve">✔ Approve</button>
+        </a>
+
+        <a href="/reject_loan/{{ loan.id }}">
+            <button class="reject">❌ Reject</button>
+        </a>
+    {% else %}
+        ✔ Completed
+    {% endif %}
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+<br><br>
+
+<a href="/dashboard">⬅ Back to Dashboard</a>
+
+</div>
+
+</body>
+</html>

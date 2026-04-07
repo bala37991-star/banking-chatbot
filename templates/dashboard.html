@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Banking Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(120deg, #4facfe, #00f2fe);
+            margin: 0;
+            color: white;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* 🎨 BUTTON COLORS */
+        .deposit-btn {
+            background: #28a745; /* green */
+        }
+
+        .transfer-btn {
+            background: #dc3545; /* red */
+        }
+
+        .loan-btn {
+            background: #ffc107; /* yellow */
+            color: black;
+        }
+
+        .chat-btn {
+            background: #007bff; /* blue */
+        }
+
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        #chatbox {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topbar">
+        <h2>👋 Welcome {{ user.username }}</h2>
+        <div>
+            <a href="/logout" style="color:white;">Logout</a>
+            {% if user.role == "admin" %}
+            | <a href="/admin" style="color:white;">Admin</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BALANCE -->
+    <div class="card">
+        <h3>💰 Balance</h3>
+        <h1>₹{{ user.balance }}</h1>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="card">
+        <h3>💳 Banking Actions</h3>
+
+        <form action="/deposit" method="POST">
+            <input type="number" name="amount" placeholder="Deposit amount" required>
+            <button class="deposit-btn">Deposit</button>
+        </form>
+
+        <form action="/transfer" method="POST">
+            <input type="text" name="receiver" placeholder="Receiver" required>
+            <input type="number" name="amount" placeholder="Amount" required>
+            <button class="transfer-btn">Transfer</button>
+        </form>
+
+        <form action="/apply_loan" method="POST">
+            <input type="number" name="amount" placeholder="Loan amount" required>
+            <input type="text" name="reason" placeholder="Reason" required>
+            <button class="loan-btn">Apply Loan</button>
+        </form>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="card">
+        <h3>📄 Transactions</h3>
+        <ul>
+            {% for t in transactions %}
+            <li>{{ t.type }} - ₹{{ t.amount }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card">
+        <h3>📊 Spending Graph</h3>
+        <canvas id="chart"></canvas>
+    </div>
+
+    <!-- CHAT -->
+    <div class="card">
+        <h3>🤖 Banking AI</h3>
+
+        <input id="msg" placeholder="Ask something..." style="width:70%;">
+        <button class="chat-btn" onclick="sendMsg()">Send</button>
+
+        <div id="chatbox"></div>
+    </div>
+
+</div>
+
+<script>
+const months = {{ months | tojson }};
+const amounts = {{ amounts | tojson }};
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Spending',
+            data: amounts,
+            backgroundColor: [
+                '#ff6384',
+                '#36a2eb',
+                '#ffcd56',
+                '#4bc0c0',
+                '#9966ff',
+                '#ff9f40'
+            ]
+        }]
+    }
+});
+
+// CHAT FUNCTION
+function sendMsg() {
+    let msg = document.getElementById("msg").value;
+
+    fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: msg})
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("chatbox").innerHTML += 
+        "<p><b>You:</b> " + msg + "</p>" +
+        "<p><b>AI:</b> " + data.answer + "</p>";
+
+        document.getElementById("msg").value = "";
+    });
+}
+
+// ENTER KEY FIX
+document.getElementById("msg").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendMsg();
+    }
+});
+</script>
+
+</body>
+</html>
